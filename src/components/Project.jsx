@@ -4,12 +4,25 @@ import { useNavigate, Link } from 'react-router-dom';
 
 
 export default function Project(props) {
-  let { projects, setProjects } = useContext(ProjectContext);
+  let { projects, setDBUpdated } = useContext(ProjectContext);
 
   const navigate = useNavigate();
 
   const deleteProject = (pid) => {
-    setProjects(projects.filter((proj) => proj.id !== pid));
+    let url = 'api/projects/' + pid
+    fetch(url, {
+        method: "DELETE",
+    })
+        .then((response) => {
+            return response.json();
+        })
+        .then((resp) => {
+            setDBUpdated(true);
+        })
+        .catch((err) => {
+            // Code called when an error occurs during the request
+            console.log(err.message);
+        });
   }
 
   return (
@@ -33,8 +46,8 @@ export default function Project(props) {
                 <td>{e.id}</td>
                 <td>{e.title}</td>
                 <td>{e.description}</td>
-                <td><button className='primary' onClick={() => navigate(`/project/${e.id}`)}>Edit</button></td>
-                <td><button onClick={() => { deleteProject(e.id) }}>Delete</button></td>
+                <td><button className='primary' onClick={() => navigate(`/project/${e._id}`)}>Edit</button></td>
+                <td><button onClick={() => { deleteProject(e._id) }}>Delete</button></td>
               </tr>
             )
           })}

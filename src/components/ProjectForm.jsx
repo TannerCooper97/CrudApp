@@ -3,19 +3,21 @@ import { ProjectContext } from '../App.jsx';
 import { useParams, useNavigate } from 'react-router-dom';
 
 export default function ProjectForm() {
-
+    let { projects, setProjects, setDBUpdated } = useContext(ProjectContext);
+    
     const navigate = useNavigate();
 
-    let { projects, setProjects } = useContext(ProjectContext);
-
     let { pid } = useParams();
-    pid = parseInt(pid);
+    // pid = parseInt(pid);
 
     let project;
     if (pid) {
-        project = { ...projects.find(p => p.id === pid) };
+        project = { ...projects.find(p => p._id === pid) };
     } else {
-        let maxID = projects[projects.length - 1].id + 1;
+        let maxID = 1;
+        if (projects.legnth > 0){
+            maxID = projects[projects.legnth - 1].id + 1;
+        }
         project = { "id": maxID, "title": '', "description": '' };
     }
 
@@ -28,16 +30,36 @@ export default function ProjectForm() {
     }
 
     const addUpdateProjForm = (e) => {
+
         e.preventDefault();
-        let projectsClone = [...projects];
+
+        let url = "";
+        let fetch_method = "";
         if (pid) {
-            let Objindex = projectsClone.findIndex((obj) => obj.id === pid);
-            projectsClone[Objindex] = project;
+            url = 'api/projects/' + project._id;
+            fetch_method = "PUT";
         } else {
-            projectsClone.push(project);
+            url = 'api/projects';
+            fetch_method = "POST";
         }
-        setProjects(projectsClone);
-        navigate('/list');
+
+        fetch(url, {
+            method: fetch_method,
+            headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+            body: JSON.stringify(project),
+            credentials: "include"
+        })
+            .then((response) => {
+                return response.json();
+            })
+            .then((resp) => {
+               setDBUpdated(true);
+               navigate('/list');
+            })
+            .catch((err) => {
+                // Code called when an error occurs during the request
+                console.log(err.message);
+            });
     }
 
     return (
